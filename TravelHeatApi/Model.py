@@ -11,38 +11,40 @@ db = SQLAlchemy()
 class Coordinate(db.Model):
     __tablename__ = 'coordinates'
     id = db.Column(db.Integer, primary_key=True)
-    latitude = db.Column(db.Decimal(12,8), nullable=False)
-    longitude = db.Column(db.Decimal(12,8), nullable=False)
-    description = db.Column(db.String(100), nullable=True)
-    date_visited = db.Column(db.TIMESTAMP, nullable=False)
+    latitude = db.Column(db.Float(12,8), nullable=False)
+    longitude = db.Column(db.Float(12,8), nullable=False)
+    date_visited = db.Column(db.String(16), nullable = False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    user = db.relationship('User', backref=db.backref('coordinates', lazy='dynamic' ))
+    user = db.relationship('User', backref=db.backref('coordinates', lazy='dynamic'))
 
-    def __init__(self, latitude, longitude, description, date_visited, user_id);
+    def __init__(self, latitude, longitude, user_id, date_visited):
         self.latitude = latitude
         self.longitude = longitude
-        self.description = description
-        self.date_visited = date_visited
         self.user_id = user_id
+        self.date_visited = date_visited
 
 
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    pin = db.Column(db.String(8), nullable=False)
 
-    def __init__(self, name):
+    def __init__(self, name, email, pin):
         self.name = name
-
+        self.email = email
+        self.pin = pin
 
 class UserSchema(ma.Schema):
     id = fields.Integer()
     name = fields.String(required=True)
-
+    email = fields.String(required=True)
+    pin = fields.String(required=True)
 
 class CoordinateSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
-    latitude = fields.Integer(required=True)
-    longitude = fields.Integer(required=True)
-    date_visited = fields.DateTime()
     user_id = fields.Integer(required=True)
+    latitude = fields.Float(required=True)
+    longitude = fields.Float(required=True)
+    date_visited = fields.DateTime()
